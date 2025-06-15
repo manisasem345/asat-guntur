@@ -27,3 +27,79 @@ Tambahan (Opsional):
   error_reporting(E_ALL);
 
 - Gunakan prepared statement untuk keamanan dari SQL injection
+
+
+backup n restore
+
+1. PERSIAPAN DIREKTORI
+   mkdir keuangan
+   mkdir harian
+   mkdir harian_backup
+   mkdir mingguan_backup
+
+2. MEMBUAT FILE LAPORAN OTOMATIS
+   touch /keuangan/harian/laporan_keuangan_$(date +\%Y-\%m-\%d).txt
+
+3. BACKUP COMMANDS
+
+   a. Full Backup:
+   tar -cvf /keuangan/harian_backup/harian.tar -C /keuangan/harian
+
+   b. Incremental Backup:
+   tar -cvf /keuangan/harian_backup/DiffBackup_Harian$(date +"\%Y\%m\%d").tar --newer-mtime="yesterday" /keuangan/harian/
+
+   c. Backup dengan rsync:
+   rsync -av /keuangan/harian_backup/harian /keuangan/harian/
+
+4. RESTORE COMMANDS
+
+   a. Full Restore:
+   tar -xvf /keuangan/harian_backup/harian.tar -C /keuangan/harian
+
+   b. Restore Incremental:
+   tar -xvf /keuangan/harian_backup/DiffBackup_Harian$(date +"\%Y\%m\%d").tar -C /keuangan/harian
+
+5. CRONTAB SETUP
+
+   Edit crontab:
+   crontab -e
+
+   Syntax Crontab (menit jam hari bulan hari_minggu):
+   
+   a. Backup Harian (setiap hari jam 23:00):
+   0 23 * * * tar -cvf /keuangan/harian_backup/DiffBackup_Harian$(date +"\%Y\%m\%d").tar --newer-mtime="yesterday" /keuangan/harian/
+
+   b. Laporan Harian Otomatis (setiap hari jam 23:00):
+   0 23 * * * touch /keuangan/harian/laporan_keuangan_$(date +\%Y-\%m-\%d).txt
+
+   c. Backup Mingguan (setiap Minggu jam 23:00):
+   0 23 * * 0 rsync -av /keuangan/harian /keuangan/harian_backup
+
+   Lihat crontab aktif:
+   crontab -l
+
+6. JENIS BACKUP
+
+   - Full Backup: Semua data
+   - Incremental: Hanya perubahan sejak backup terakhir  
+   - Differential: Hanya perubahan sejak full backup terakhir
+
+7. KELEBIHAN & KEKURANGAN
+
+   Full Backup:
+   + Restore cepat
+   - Ukuran besar, lambat
+
+   Incremental:
+   + Ukuran kecil, cepat
+   - Restore lebih rumit
+
+   Differential:
+   + Restore sederhana dari incremental
+   - Lebih besar dari incremental
+
+CATATAN:
+- Pastikan permission direktori sudah benar
+- Test backup dan restore secara berkala
+- Monitor space disk untuk backup files
+
