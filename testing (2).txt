@@ -1,0 +1,29 @@
+
+RINGKASAN PERBAIKAN ERROR
+
+1. Error Database: Access denied for user 'webuser'
+Fix:
+- Buat user MySQL dan beri hak akses:
+  CREATE USER 'webuser'@'localhost' IDENTIFIED BY 'passwordmu';
+  GRANT ALL PRIVILEGES ON asat_10sija2.* TO 'webuser'@'localhost';
+  FLUSH PRIVILEGES;
+- Atau pakai user root sementara di connect_db.php
+
+2. Error Upload: move_uploaded_file(): Permission denied
+Fix:
+- Pastikan folder uploads/ ada dan bisa ditulis:
+  sudo mkdir -p /var/www/html/asat-guntur/uploads
+  sudo chmod -R 777 /var/www/html/asat-guntur/uploads
+
+3. Error SQL: Incorrect integer value: 'jnjn' for column freelance
+Fix:
+- Ubah tipe kolom freelance dari INT ke VARCHAR:
+  ALTER TABLE biodata MODIFY freelance VARCHAR(50);
+
+Tambahan (Opsional):
+- Tambahkan error reporting di awal file PHP:
+  ini_set('display_errors', 1);
+  ini_set('log_errors', 1);
+  error_reporting(E_ALL);
+
+- Gunakan prepared statement untuk keamanan dari SQL injection
