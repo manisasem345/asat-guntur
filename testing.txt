@@ -1,0 +1,118 @@
+
+=== CONTEKAN SINGKAT JOBSHEET UJIAN ===
+
+1. SSH SERVER (Remote Server)
+apt install openssh-server
+nano /etc/ssh/sshd_config
+service ssh restart
+ssh user@ipserver
+adduser user2
+nano /etc/security/limits.conf
+adduser user3
+AllowUsers user3 (di sshd_config)
+nano /etc/banner (buat banner login)
+nano /etc/ssh/sshd_config (atur Banner /etc/banner)
+
+2. SAMBA SERVER
+apt install samba
+mkdir -p /home/samba
+chmod 777 /home/samba
+nano /etc/samba/smb.conf (tambah konfigurasi sharing)
+adduser guru
+smbpasswd -a guru
+systemctl restart smbd.service
+smbclient -U guru //ip/share
+
+3. NFS SERVER
+apt install nfs-kernel-server
+mkdir -p /home/siswa
+chmod 777 /home/siswa
+nano /etc/exports
+exportfs -a
+systemctl restart nfs-kernel-server
+Client:
+apt install nfs-common
+mkdir -p /mnt/siswa
+mount ip:/home/siswa /mnt/siswa
+nano /etc/fstab
+
+User Tertentu:
+adduser -u 2010 guru
+chown guru:guru /home/guru
+chmod 700 /home/guru
+nano /etc/exports
+exportfs -ra
+
+4. DNS SERVER
+apt install bind9
+nano /etc/bind/named.conf.local (forward + reverse zone)
+cp /etc/bind/db.local /etc/bind/fwd
+cp /etc/bind/db.127 /etc/bind/rvs
+nano /etc/resolv.conf (nameserver ip)
+systemctl restart bind9
+nslookup domain
+
+5. WEB SERVER APACHE
+apt install apache2
+systemctl status apache2
+cd /var/www/html
+nano index.html
+nano /etc/apache2/sites-available/000-default.conf (ubah DocumentRoot)
+nano /etc/apache2/apache2.conf (tambah Directory baru)
+systemctl restart apache2.service
+
+6. WEB SERVER HTTPS
+apt install apache2 openssl
+mkdir -p /etc/apache2/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+nano /etc/apache2/sites-available/default-ssl.conf
+a2enmod ssl
+a2ensite default-ssl
+systemctl restart apache2
+
+7. BACKUP & RESTORE
+Full Backup:
+tar -cvf full_backup/backup.tar data/
+tar -tvf full_backup/backup.tar
+Restore:
+tar -xvf full_backup/backup.tar -C /lokasi
+
+Incremental Backup:
+rsync -av data/ inc_backup/
+rsync -av inc_backup/ data/
+
+Crontab Full:
+0 2 * * 2 tar -cvf /root/full_backup/backup.tar /root/data/
+
+Crontab Incremental:
+0 2 * * 2 rsync -av /root/data/ /root/inc_backup/
+
+8. LVM
+fdisk /dev/sdX -> buat partisi tipe LVM (t = 8e)
+pvcreate /dev/sdX1
+vgcreate namaVG /dev/sdX1
+lvcreate -n namaLV --size 1G namaVG
+mkfs.xfs /dev/namaVG/namaLV
+mount /dev/namaVG/namaLV /mountpoint
+nano /etc/fstab
+
+Extend LVM:
+pvcreate /dev/sdY1
+vgextend namaVG /dev/sdY1
+lvextend -L+500M /dev/namaVG/namaLV
+xfs_growfs /dev/namaVG/namaLV
+
+9. DATABASE SERVER (MariaDB)
+apt install mariadb-server
+systemctl status mariadb
+mysql_secure_installation
+mysql -u root -p
+create database namadb;
+show databases;
+exit
+mysql -u user -p namadb < path.sql
+
+Edit koneksi di file config php:
+host, user, password, database
+
+=== SELESAI ===
