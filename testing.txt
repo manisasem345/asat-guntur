@@ -1,5 +1,4 @@
 
-=== CONTEKAN SINGKAT JOBSHEET UJIAN ===
 
 1. SSH SERVER (Remote Server)
 apt install openssh-server
